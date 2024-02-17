@@ -1,0 +1,18 @@
+.cat-info{
+    margin-top: 20px;
+}
+
+.container{
+    display: flex;
+    font-family: sans-serif;
+}
+
+.cat-info img{
+    display: block;
+    width: 350px;
+    margin-right: 20px;
+}
+
+.animal-description span{
+    font-weight: 600;
+}

@@ -1,23 +1,65 @@
-import axios from "axios";
-axios.defaults.headers.common["x-api-key"] = "live_e9pCKmfCwK8PjBFndgUobF57xT1prqJWJGgMbl9HQomMP1Re320rQZmPghZUgxWs";
 import Notiflix from 'notiflix';
-import SlimSelect from 'slim-select'
+import { fetchBreeds, fetchCatByBreed } from "./cat-api";
 
-new SlimSelect({
-  select: 'cat-info'
-})
 
 const infoCat = document.querySelector(".cat-info");
 const breedSelect = document.querySelector(".breed-select");
 const loader = document.querySelector(".loader");
-const error = document.querySelector(".error");
+const errorWindow = document.querySelector(".error");
 
+loader.style.display = 'none';
+errorWindow.style.display = 'none';
 
-    
-function fetchBreeds() {
-    const response = axios.get(
-        "https://api.thecatapi.com/v1/breeds"
-      );
-      return response.data;
+function populateBreedsSelect(breeds) {
+  breeds.forEach(breed => {
+     const option = document.createElement("option");
+     option.value = breed.id;
+      option.textContent = breed.name;
+      breedSelect.appendChild(option);
+  });
 }
-console.log(fetchBreeds());
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchBreeds()
+      .then(breeds => {
+          populateBreedsSelect(breeds);
+      })
+      .catch(error => {
+        Notiflix.Notify.failure("Faild to load cat breeds", error);
+          loader.style.display = 'none';
+          errorWindow.style.display = 'block';
+      });
+});
+
+breedSelect.addEventListener('change', function(){
+    const breedId = breedSelect.value;
+
+    loader.style.display = 'block';
+    infoCat.style.display = 'none';
+    errorWindow.style.display = 'none';
+
+    fetchCatByBreed(breedId)
+    .then(catData => {
+      console.log(catData);
+      infoCat.innerHTML = 
+     `
+     <div class="container">
+     <img src= ${catData[0].url} alt="Cat image"></img>
+     <div class="animal-description">
+       <h2> ${catData[0].breeds[0].name}</h2>
+       <p class="description"> ${catData[0].breeds[0].description}</p>
+       <p class="temperament"> <span>Temperament:</span> ${catData[0].breeds[0].temperament}</p>
+     </div>
+     </div>
+      
+     `
+
+      infoCat.style.display = 'block';
+      loader.style.display = 'none';
+    })
+    .catch(error => {
+      Notiflix.Notify.failure("Faild to load cat info", error);
+      loader.style.display = 'none';
+      errorWindow.style.display = 'block';
+    })
+})
